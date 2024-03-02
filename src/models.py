@@ -9,31 +9,23 @@ Base = declarative_base()
 
 class User(Base):
     __tablename__ = 'user'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
     id = Column(Integer, primary_key=True)
     name = Column(String(250), nullable=False)
-
-class LoggedUser(Base):
-    __tablename__ = 'logged user'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
-    id = Column(Integer, primary_key=True)
-    name = Column(Integer, ForeignKey('name.id'))
-    user = relationship("User", back_populates="logged_users")
-    favorites = relationship("FavoriteItem", back_populates="logged_user")
-    characters = relationship("Character", back_populates="logged_user")
-    planets = relationship("Planet", back_populates="logged_user")
-
-
+    favorites = relationship("FavoriteItem", back_populates="user")
+    characters = relationship("Character", back_populates="user")
+    planets = relationship("Planet", back_populates="user")
 
 class FavoriteItem(Base):
     __tablename__ = 'favorite_item'
     id = Column(Integer, primary_key=True)
     title = Column(String(250), nullable=False)
-    logged_user_id = Column(Integer, ForeignKey('logged_user.id'))
-    logged_user = relationship("LoggedUser", back_populates="favorites")
-
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship("User", back_populates="favorites")
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title
+        }
 
 class Character(Base):
     __tablename__ = 'character'
@@ -43,8 +35,15 @@ class Character(Base):
     gender = Column(String(50))
     planet_id = Column(Integer, ForeignKey('planet.id'))
     planet = relationship("Planet", back_populates="characters")
-    logged_user_id = Column(Integer, ForeignKey('logged_user.id'))
-    logged_user = relationship("LoggedUser", back_populates="character")
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship("User", back_populates="characters")
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'species': self.species,
+            'gender': self.gender
+        }
 
 class Planet(Base):
     __tablename__ = 'planet'
@@ -53,11 +52,19 @@ class Planet(Base):
     population = Column(Integer)
     climate = Column(String(250))
     characters = relationship("Character", back_populates="planet")
-    logged_user_id = Column(Integer, ForeignKey('logged_user.id'))
-    logged_user = relationship("LoggedUser", back_populates="Planet")
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship("User", back_populates="planets")
 
     def to_dict(self):
-        return {}
+        return {
+            'id': self.id,
+            'name': self.name,
+            'species': self.species,
+            'planet_id': self.planet_id,
+            'climate': self.climate,
+            'population': self.population
+
+        }
 
 
 
